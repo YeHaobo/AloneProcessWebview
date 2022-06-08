@@ -149,12 +149,13 @@ public class ToastCommand implements Command {
 
     @Override
     public void exec(Map params, CommandResultBack commandResultBack) {
+    	//执行命令
         Toast.makeText(context, String.valueOf(params.get("msg")),Toast.LENGTH_SHORT ).show();
 
         Map map = new HashMap();
         map.put("msg","吐司成功！");
 
-        commandResultBack.onResult(200,"callback",map);
+        commandResultBack.onResult(200,"callback",map);//回调
     }
 
 }
@@ -184,6 +185,7 @@ public class ToastCommand implements Command {
 
 ### 问题及其他
 
-（1）依赖过程中若编译不通过请重新Rebuild一下。	
+（1）依赖过程中若编译不通过请重新Rebuild一下。
+
 （2）网页加载失败时请检查WebviewFragment中的initWebview()方法，分析初始化是否支持该网页配置/动作。	
 
