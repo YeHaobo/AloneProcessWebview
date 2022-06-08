@@ -127,12 +127,9 @@ public class WebviewActivity extends AppCompatActivity {
 
 ### 注册Activity
 ```java
-
-		<!--android:hardwareAccelerated="true"开启硬件加速-->
-		<!--android:process=":remoteweb"需要在子进程，子线程名字自定义-->
-   	<activity android:name=".WebviewActivity" android:hardwareAccelerated="true" android:process=":remoteweb"/>
-   
-   
+<!--android:hardwareAccelerated="true"开启硬件加速-->
+<!--android:process=":remoteweb"需要在子进程，子线程名字自定义-->
+<activity android:name=".WebviewActivity" android:hardwareAccelerated="true" android:process=":remoteweb"/>  
 ```
 
 ### 自定义命令
@@ -179,10 +176,11 @@ public class ToastCommand implements Command {
     function callback(data){
         var obj = JSON.parse(data);//回调传入的是Json需要转换成对象
 		var code = obj.code;//返回码
+		var msg = obj.msg;
 		... ...
     }		
 ```
-若需要指定Callback接口，请参考assets中的aidl.html文件
+若需要指定JS中的Callback回调接口，请参考assets中的aidl.html文件
 
 ### 问题及其他
 
