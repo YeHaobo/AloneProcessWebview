@@ -1,6 +1,6 @@
 # AloneProcessWebview
 
-Android独立进程的Webview解决方案。使用JS传入命令以及参数后即可执行java层代码，执行完毕后会再次回调至JS中。适用于App的多种模块化开发、web混合开发、多人协作等。Webview的独立进程大幅减少了OOM和进程崩溃的安全性问题。内部核心使用的是AIDL接口分发，可并发的进行通讯和传输。	   
+Android独立进程的Webview解决方案。使用JS传入命令名称和参数后即可执行java层代码，执行完毕后会再次回调至JS中。适用于Android多模块化开发、web混合开发、多人协作等。Webview的独立进程大幅减少了OOM和进程崩溃的安全性问题。内部核心使用的是AIDL接口分发，可并发的进行通讯和传输。	   
 
 |方案流程图|
 |:----|
@@ -25,12 +25,14 @@ Android独立进程的Webview解决方案。使用JS传入命令以及参数后�
     ... ...
     implementation 'com.android.support:appcompat-v7:28.0.0'//support-v7
     implementation 'com.google.code.gson:gson:2.8.5'//GSON
-    implementation 'com.github.YeHaobo:AloneProcessWebview:1.0'
+    implementation 'com.github.YeHaobo:AloneProcessWebview:2.0'
     ... ...
   }
 ```
 
-### 创建承载Webview的WebviewFragment
+## 基本使用
+
+### 创建承载Webview的Fragment
 （1）WebviewFragment.java
 ```java
 public class WebviewFragment extends BaseWebviewFragment {
@@ -97,7 +99,7 @@ public class WebviewFragment extends BaseWebviewFragment {
 </LinearLayout>
 ```
 
-### 创建展示WebviewFragment的WebviewActivity
+### 创建展示Fragment的Activity
 （1）WebviewActivity.java
 ```java
 public class WebviewActivity extends AppCompatActivity {
@@ -154,15 +156,17 @@ public class ToastCommand implements Command {
 
         Map map = new HashMap();
         map.put("msg","吐司成功！");
-
-        commandResultBack.onResult(200,"callback",map);//回调
+	map.put("action",String.valueOf(params.get("action")));
+	
+	//回调  参数一：返回码，会始终携带在返回值map中。参数二：回调的JS方法名，需要与前端统一。参数三：map返回值
+        commandResultBack.onResult(200,"callback",map);
     }
 
 }
 ```
 
 ### 注册命令
-注意：需要在主进程（命令执行进程）注册，且要在webview使用以前注册。
+注意：需要在主进程注册，且要在webview使用以前注册。
 ```java   
         CommandManager.getInstance().registerCommand(new ToastCommand(this));	
 ```
@@ -170,12 +174,12 @@ public class ToastCommand implements Command {
 ### 前端使用
 （1）调用命令执行
 ```java  
-        window.webview.post('toast',JSON.stringify(params));//需要转换成字符串传输	
+        window.webview.post('toast',JSON.stringify(params));//参数一：Command命令的name,参数二：需要转换成字符串传输	
 ```
 （2）命令执行回调
 ```java    
     function callback(data){
-        var obj = JSON.parse(data);//回调传入的是Json需要转换成对象
+        var obj = JSON.parse(data);//回调传入的是Json，需要转换成对象
 		var code = obj.code;//返回码
 		var msg = obj.msg;
 		... ...
@@ -185,7 +189,10 @@ public class ToastCommand implements Command {
 
 ### 问题及其他
 
-（1）依赖过程中若编译不通过请重新Rebuild一下。
+（1）Command命令的name和回调的JS方法名需要与前端一致。
 
-（2）网页加载失败时请检查WebviewFragment中的initWebview()方法，分析初始化是否支持该网页配置/动作。	
+（2）网页加载失败时请检查WebviewFragment中的initWebview()方法，分析初始化是否支持该网页配置/动作。
+
+（3）依赖过程中若编译不通过请重新Rebuild一下。
+
 
