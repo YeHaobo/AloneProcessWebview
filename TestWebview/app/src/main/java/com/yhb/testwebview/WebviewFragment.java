@@ -22,7 +22,7 @@ public class WebviewFragment extends BaseWebviewFragment {
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
-    public boolean initWebview(final ProWebview webview) {
+    public boolean initWebview(ProWebview webview) {
         /****其他初始化操作都在此做，这里只设置了开启的JS**/
         webview.getSettings().setJavaScriptEnabled(true);
         return true;
