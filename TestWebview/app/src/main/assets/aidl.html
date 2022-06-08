@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="format-detection" content="telephone = no">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <style type="text/css">
+        .item {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            background-color: #999999;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body style="height: 100%;">
+<script>
+
+    //可以交互回调
+    function onWebResume(){
+        var txt = document.getElementById('life');
+        txt.innerHTML = txt.innerHTML + ' -> onWebResume';
+    }
+
+    //不可交互回调
+    function onWebPause(){
+        var txt = document.getElementById('life');
+        txt.innerHTML = txt.innerHTML + ' -> onWebPause';
+    }
+
+    //不可见回调
+    function onWebStop(){
+        var txt = document.getElementById('life');
+        txt.innerHTML = txt.innerHTML + ' -> onWebStop';
+    }
+
+    //视图销毁回调
+    function onWebDestroy(){
+        var txt = document.getElementById('life');
+        txt.innerHTML = txt.innerHTML + ' -> onWebDestroy';
+    }
+
+
+
+    //用于存储命令回调
+    var callbacks = {};
+
+    //获取唯一键，用于确定回调方法
+    function actionName(){
+        return 'action-' + (new Date().getTime());//返回的值确保唯一，且需要为字符类型
+    }
+
+    //添加回调
+    function addCallback(actionName,func){
+        delete callbacks[actionName];//移除对应的回调对象
+        callbacks[actionName] = {callback:func};//新增回调对象
+    }
+
+    //接收回调
+    function callback(data){
+        var obj = JSON.parse(data);//回调传入的是Json需要转换
+        callbacks[obj.action].callback(data);//执行对应的回调
+        delete callbacks[obj.action];//删除对应的回调
+    }
+
+    //调用命令
+    function callToast() {
+        var params = {
+            "action":actionName(),//唯一的键（必要）
+            "msg":"吐司—Android—Java执行成功",//消息
+        };
+
+        //添加回调（注意：params中的action必须与addCallback中的actionName一致）
+        addCallback(params.action, function(data){
+            var obj = JSON.parse(data);
+            var txt = document.getElementById('cmd');
+            txt.innerHTML = txt.innerHTML + ' | ' + obj.action + ' | ' + obj.code + ' | ' + obj.msg;
+        })
+
+        //发送命令
+        window.webview.post('toast',JSON.stringify(params));
+
+    }
+
+</script>
+<div class="item" style="font-size: 20px; color: #ffffff" onclick="callToast()">调用命令</div>
+<p id="cmd" style="font-size: 15px; color: #000000">回调信息</p>
+<p id="life" style="font-size: 15px; color: #000000">生命周期</p>
+</body>
+</html>
