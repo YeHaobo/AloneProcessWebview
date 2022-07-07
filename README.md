@@ -25,7 +25,7 @@ Android独立进程的Webview解决方案。使用JS传入命令名称和参数�
     ... ...
     implementation 'com.android.support:appcompat-v7:28.0.0'//support-v7
     implementation 'com.google.code.gson:gson:2.8.5'//GSON
-    implementation 'com.github.YeHaobo:AloneProcessWebview:2.0'
+    implementation 'com.github.YeHaobo:AloneProcessWebview:2.1'
     ... ...
   }
 ```

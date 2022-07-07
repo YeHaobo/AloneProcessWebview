@@ -76,7 +76,7 @@ public class WebToMainConnector {
         @Override
         public void binderDied() {
             iWebAidlInterface.asBinder().unlinkToDeath(deathRecipient,0);//解除连接监测
-            deathRecipient = null;
+            iWebAidlInterface = null;
             connectToMainProcessService();//重新连接
         }
     };
