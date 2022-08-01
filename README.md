@@ -1,6 +1,9 @@
 # AloneProcessWebview
 
-Android独立进程的Webview解决方案。使用JS传入命令名称和参数后即可执行java层代码，执行完毕后会再次回调至JS中。适用于Android多模块化开发、web混合开发、多人协作等。Webview的独立进程大幅减少了OOM和进程崩溃的安全性问题。内部核心使用的是AIDL接口分发，可并发的进行通讯和传输。	   
+Android独立进程Webview解决方案。  
+适用于Android多模块化开发、web混合开发、多人协作等。  
+独立进程Webview大幅减少OOM和进程崩溃的安全性问题。  
+内部核心使用的是AIDL接口分发，可并发的进行通讯和数据传输。   
 
 |方案流程图|
 |:----|
@@ -13,20 +16,16 @@ Android独立进程的Webview解决方案。使用JS传入命令名称和参数�
 ```java
   allprojects {
     repositories {
-      ... ...
       maven { url "https://jitpack.io" }
-      ... ...
     }
   }
 ```
 （2）在app的build.gradle文件中添加
 ```java
   dependencies {
-    ... ...
-    implementation 'com.android.support:appcompat-v7:28.0.0'//support-v7
+    implementation 'com.android.support:appcompat-v7:28.0.0'//v7 AndroidX项目不用添加
     implementation 'com.google.code.gson:gson:2.8.5'//GSON
-    implementation 'com.github.YeHaobo:AloneProcessWebview:2.1'
-    ... ...
+    implementation 'com.github.YeHaobo:AloneProcessWebview:2.2'
   }
 ```
 
@@ -38,50 +37,46 @@ Android独立进程的Webview解决方案。使用JS传入命令名称和参数�
 public class WebviewFragment extends BaseWebviewFragment {
     @Override
     public int getLayoutRes() {
-        return R.layout.fragment_webview;//传入布局
+        return R.layout.fragment_webview;//布局文件
     }
 
     @Override
     public int getWebviewId() {
-        return R.id.webview;//传入布局中webview的Id
+        return R.id.webview;//webview的Id
     }
 
     @Override
     public String getStartUrl() {
-        return "file:///android_asset/aidl.html";//打开起始网页
+        return "file:///android_asset/aidl.html";//打开的网页链接
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
-    public boolean initWebview(final ProWebview webview) {
-        /**其他初始化操作都在此做，这里只设置了开启的JS**/
-        webview.setWebViewClient(new WebViewClient());
-        webview.setWebChromeClient(new WebChromeClient());
-        WebSettings webSettings = webview.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        ... ...
-        return true;//初始化完成后返回ture (默认返回false,只启用JavaScript)
-    }
-
-/***************************以下生命周期回调的JS方法名需要与前端确认统一****************************************/
-    @Override
-    public String getOnResumeActionName() {
-        return "onWebResume";//fragment onResume时回调JS的function方法名
+    public boolean initWebview(ProWebview webview) {//初始化webview
+//        webview.setWebViewClient(new WebViewClient());
+//        webview.setWebChromeClient(new WebChromeClient());
+        webview.getSettings().setJavaScriptEnabled(true);
+        return true;//默认返回false，默认情况只打开JS的支持
     }
 
     @Override
-    public String getOnPauseActionName() {
-        return "onWebPause";//fragment onPause时回调JS的function方法名
+    public String getOnResumeFunctionName() {
+        return "onWebResume";
     }
 
     @Override
-    public String getOnStopActionName() {
-        return "onWebStop";//fragment onStop时回调JS的function方法名
+    public String getOnPauseFunctionName() {
+        return "onWebPause";
     }
 
     @Override
-    public String getOnDestroyActionName() {
-        return "onWebDestroy";//fragment onDestroy时回调JS的function方法名
+    public String getOnStopFunctionName() {
+        return "onWebStop";
+    }
+
+    @Override
+    public String getOnDestroyFunctionName() {
+        return "onWebDestroy";
     }
 
 }
@@ -92,7 +87,7 @@ public class WebviewFragment extends BaseWebviewFragment {
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <com.yhb.aloneprocesswebview.view.ProWebview
+    <com.yhb.aloneprocesswebview.client.view.ProWebview
         android:id="@+id/webview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
@@ -103,15 +98,32 @@ public class WebviewFragment extends BaseWebviewFragment {
 （1）WebviewActivity.java
 ```java
 public class WebviewActivity extends AppCompatActivity {
+
+    private WebviewFragment webviewFragment;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_webview);
 
+        webviewFragment = new WebviewFragment();
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
-        transaction.replace(R.id.fl, new WebviewFragment()).commit();
+        transaction.replace(R.id.fl, webviewFragment).commit();
+
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        //网页返回拦截虚拟返回键
+        return webviewFragment.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
+    }
+
+    private void reload(){
+    	//网页刷新
+        webviewFragment.getProWebview().reload();
+    }
+
 }
 ```
 （2）activity_webview.xml
@@ -128,10 +140,9 @@ public class WebviewActivity extends AppCompatActivity {
 ```
 
 ### 注册Activity
+注意：这里另开了子进程和硬件加速，进程名需自定义。
 ```java
-<!--android:hardwareAccelerated="true"开启硬件加速-->
-<!--android:process=":remoteweb"需要在子进程，子线程名字自定义-->
-<activity android:name=".WebviewActivity" android:hardwareAccelerated="true" android:process=":remoteweb"/>  
+        <activity android:name=".WebviewActivity" android:hardwareAccelerated="true" android:process=":remoteweb"/>
 ```
 
 ### 自定义命令
@@ -150,49 +161,67 @@ public class ToastCommand implements Command {
     }
 
     @Override
-    public void exec(Map params, CommandResultBack commandResultBack) {
-    	//执行命令
-        Toast.makeText(context, String.valueOf(params.get("msg")),Toast.LENGTH_SHORT ).show();
+    public void exec(final Map params, final CommandResult commandResult) {
+	//当前在binder线程，若更新UI需要切换线程
+        Log.e("toastcommand", Thread.currentThread().getName() + " " + Thread.currentThread().getId());
 
-        Map map = new HashMap();
-        map.put("msg","吐司成功！");
-	map.put("action",String.valueOf(params.get("action")));
-	
-	//回调  参数一：返回码，会始终携带在返回值map中。参数二：回调的JS方法名，需要与前端统一。参数三：map返回值
-        commandResultBack.onResult(200,"callback",map);
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, String.valueOf(params.get("msg")),Toast.LENGTH_SHORT ).show();
+                Map map = new HashMap();
+                map.put("code",200);
+                map.put("uuid",String.valueOf(params.get("uuid")));
+                map.put("msg","操作成功");
+                commandResult.onResult("callback",map);//回调：callback为前端JS中的回调方法名
+            }
+        });
     }
 
 }
 ```
 
-### 注册命令
-注意：需要在主进程注册，且要在webview使用以前注册。
+### 操作命令
+注意：需要在客户端的主进程注册，比如这里的WebviewActivity.class中。
 ```java   
-        CommandManager.getInstance().registerCommand(new ToastCommand(this));	
+        ToastCommand toastCommand = new ToastCommand(this);
+        CommandManager.getInstance().registerCommand(toastCommand);//注册命令
+        CommandManager.getInstance().unregisterCommand(toastCommand);//解注册命令
+        CommandManager.getInstance().findCommand("toast");//查找命令
+        CommandManager.getInstance().clearCommand();//清除所有命令
+        ConcurrentHashMap<String, Command> map = CommandManager.getInstance().allCommand();//获取所有命令
 ```
 
 ### 前端使用
 （1）调用命令执行
 ```java  
-        window.webview.post('toast',JSON.stringify(params));//参数一：Command命令的name,参数二：需要转换成字符串传输	
+        window.webview.post('toast',JSON.stringify(params));//参数一：自定义命令的name, 参数二：需要转换成Json字符串传输	
 ```
 （2）命令执行回调
 ```java    
     function callback(data){
-        var obj = JSON.parse(data);//回调传入的是Json，需要转换成对象
-		var code = obj.code;//返回码
-		var msg = obj.msg;
-		... ...
+        var obj = JSON.parse(data);//回调的是Json字符串，需要转换成对象
+	var code = obj.code;
+	var msg = obj.msg;
+	var uuid = obj.uuid;
+	...
     }		
 ```
-若需要指定JS中的Callback回调接口，请参考assets中的aidl.html文件
+注意：若JS需要鉴别回调动作，实现单次调用对应单个回调，请参考assets中的aidl.html文件
 
 ### 问题及其他
 
-（1）Command命令的name和回调的JS方法名需要与前端一致。
+（1）无法调用命令时：  
+	1、请确认命令是否在主进程中注册  
+	2、JS中的调用命令名称是否与Command命令的name一致  
+	3、JS传入的是否是json字符串  
 
-（2）网页加载失败时请检查WebviewFragment中的initWebview()方法，分析初始化是否支持该网页配置/动作。
+（2）JS无法收到回调时：  
+	1、Command命令实现中的回调是否调用  
+	2、Command命令实现中回调的JS方法名是否正确  
 
-（3）依赖过程中若编译不通过请重新Rebuild一下。
+（3）网页加载失败时：  
+	1、请检查WebviewFragment中的initWebview()方法，分析初始化是否支持该网页配置/动作。
 
 
