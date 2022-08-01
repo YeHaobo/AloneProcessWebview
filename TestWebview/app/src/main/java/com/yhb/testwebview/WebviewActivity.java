@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 
 
@@ -25,12 +26,11 @@ public class WebviewActivity extends AppCompatActivity {
 
     }
 
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        return webviewFragment.onKeyDown(keyCode, event);//网页返回拦截虚拟返回键
+        //网页返回拦截虚拟返回键
+        return webviewFragment.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
     }
-
 
     private void reload(){
         webviewFragment.getProWebview().reload();//网页刷新
