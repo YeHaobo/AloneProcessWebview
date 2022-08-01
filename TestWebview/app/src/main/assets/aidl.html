@@ -51,45 +51,47 @@
     var callbacks = {};
 
     //获取唯一键，用于确定回调方法
-    function actionName(){
-        return 'action-' + (new Date().getTime());//返回的值确保唯一，且需要为字符类型
+    function uuid(){
+        return (new Date().getTime()).toString();//返回的值确保唯一
     }
 
     //添加回调
-    function addCallback(actionName,func){
-        delete callbacks[actionName];//移除对应的回调对象
-        callbacks[actionName] = {callback:func};//新增回调对象
+    function addCallback(uuid,func){
+        delete callbacks[uuid];//移除对应的回调对象
+        callbacks[uuid] = {callback:func};//新增回调对象
     }
 
     //接收回调
     function callback(data){
-        var obj = JSON.parse(data);//回调传入的是Json需要转换
-        callbacks[obj.action].callback(data);//执行对应的回调
-        delete callbacks[obj.action];//删除对应的回调
+        var obj = JSON.parse(data);//回调的是字符串需要转换成对象
+        callbacks[obj.uuid].callback(data);//执行对应的回调
+        delete callbacks[obj.uuid];//删除对应的回调
     }
 
     //调用命令
     function callToast() {
+        var txt = document.getElementById('cmd');
+
         var params = {
-            "action":actionName(),//唯一的键（必要）
-            "msg":"吐司—Android—Java执行成功",//消息
+            "uuid":uuid(),//唯一键
+            "msg":"执行吐司",//消息
         };
 
-        //添加回调（注意：params中的action必须与addCallback中的actionName一致）
-        addCallback(params.action, function(data){
-            var obj = JSON.parse(data);
-            var txt = document.getElementById('cmd');
-            txt.innerHTML = txt.innerHTML + ' | ' + obj.action + ' | ' + obj.code + ' | ' + obj.msg;
+        //添加回调
+        addCallback(params.uuid, function(data){
+            //var obj = JSON.parse(data);//回调的是字符串需要转换成对象
+            txt.innerHTML = txt.innerHTML + "<br/>回调：" + data + "<br/>";
         })
 
         //发送命令
-        window.webview.post('toast',JSON.stringify(params));
-
+        var str = JSON.stringify(params);//参数需要转换成json字符串发送
+        window.webview.post('toast', str);//发送命令
+        txt.innerHTML = txt.innerHTML + "<br/>发送：" + str;
     }
 
 </script>
 <div class="item" style="font-size: 20px; color: #ffffff" onclick="callToast()">调用命令</div>
-<p id="cmd" style="font-size: 15px; color: #000000">回调信息</p>
-<p id="life" style="font-size: 15px; color: #000000">生命周期</p>
+<p id="cmd" style="font-size: 12px; color: #000000">信息</p>
+<p id="life" style="font-size: 12px; color: #000000">生命周期</p>
 </body>
 </html>

@@ -1,11 +1,11 @@
-package com.yhb.aloneprocesswebview;
+package com.yhb.aloneprocesswebview.server.service;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.os.RemoteException;
 import com.google.gson.Gson;
-import com.yhb.aloneprocesswebview.command.CommandManager;
-import com.yhb.aloneprocesswebview.command.CommandResultBack;
+import com.yhb.aloneprocesswebview.IWebAidlCallback;
+import com.yhb.aloneprocesswebview.IWebAidlInterface;
+import com.yhb.aloneprocesswebview.server.command.CommandManager;
+import com.yhb.aloneprocesswebview.server.command.CommandResult;
 import java.util.Map;
 
 /**Aidl接口实现类，运行在主进程*/
@@ -23,23 +23,17 @@ public class IWebAidlInterfaceStub extends IWebAidlInterface.Stub {
      *  |--------------------------------------|            |-------------------------------------------|
      *
      */
+
     @Override
-    public void handleWebAction(final String cmd, final String params, final IWebAidlCallback iWebAidlCallback) throws RemoteException {
-        //根据需求切换线程，这里直接切换回主线程执行
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
+    public void actionExec(String cmd, String params, final IWebAidlCallback callback) throws RemoteException {
+        CommandManager.getInstance().execCommand(cmd, new Gson().fromJson(params, Map.class), new CommandResult() {
             @Override
-            public void run() {
-                CommandManager.getInstance().execCommand(cmd, new Gson().fromJson(params, Map.class), new CommandResultBack() {
-                    @Override
-                    public void onResult(int code, String action, Map params) {
-                        try {
-                            iWebAidlCallback.onResult(code,action, new Gson().toJson(params));
-                        } catch (RemoteException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+            public void onResult(String functionName, Map data) {
+                try {
+                    callback.actionCallback(functionName, new Gson().toJson(data));
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }

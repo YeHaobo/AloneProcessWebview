@@ -1,4 +1,4 @@
-package com.yhb.aloneprocesswebview;
+package com.yhb.aloneprocesswebview.client;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
+import com.yhb.aloneprocesswebview.IWebAidlInterface;
+import com.yhb.aloneprocesswebview.server.service.MainProcessWebService;
 import java.util.concurrent.CountDownLatch;
 
 /**远程链接*/
@@ -40,7 +42,7 @@ public class WebToMainConnector {
     /**远程链接主进程服务*/
     private synchronized void connectToMainProcessService(){
         mCountDownLatch = new CountDownLatch(1);
-        Intent intent = new Intent(mContext, MainProcessService.class);
+        Intent intent = new Intent(mContext, MainProcessWebService.class);
         mContext.bindService(intent,connection,Context.BIND_AUTO_CREATE);//绑定服务
         try {
             mCountDownLatch.await();//执行连接，加锁

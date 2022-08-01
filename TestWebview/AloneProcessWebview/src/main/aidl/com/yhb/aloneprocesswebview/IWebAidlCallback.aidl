@@ -1,8 +1,10 @@
 // IWebAidlCallback.aidl
 package com.yhb.aloneprocesswebview;
 
+//服务端远程回调
 interface IWebAidlCallback {
 
-    void onResult(int code, String action, String params);
+    //functionName：回调js的方法名     data：回调数据
+    void actionCallback(String functionName, String data);
 
 }

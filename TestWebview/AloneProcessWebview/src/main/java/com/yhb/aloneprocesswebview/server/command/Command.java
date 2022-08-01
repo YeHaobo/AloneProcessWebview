@@ -1,4 +1,4 @@
-package com.yhb.aloneprocesswebview.command;
+package com.yhb.aloneprocesswebview.server.command;
 
 import java.util.Map;
 
@@ -9,6 +9,6 @@ public interface Command {
     String name();
 
     /**执行*/
-    void exec(Map params, CommandResultBack commandResultBack);
+    void exec(Map params, CommandResult result);
 
 }

@@ -1,8 +1,8 @@
-package com.yhb.aloneprocesswebview.command;
+package com.yhb.aloneprocesswebview.server.command;
 
 import android.util.Log;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**命令管理器*/
 public class CommandManager {
@@ -13,18 +13,20 @@ public class CommandManager {
     public static CommandManager getInstance() {
         if (instance == null) {
             synchronized (CommandManager.class) {
-                instance = new CommandManager();
+                if(instance == null){
+                    instance = new CommandManager();
+                }
             }
         }
         return instance;
     }
 
     /**命令Map*/
-    private HashMap<String, Command> commandHashMap;
+    private ConcurrentHashMap<String, Command> commandHashMap;
 
     /**构造*/
     private CommandManager() {
-        this.commandHashMap = new HashMap<>();
+        this.commandHashMap = new ConcurrentHashMap<>();
     }
 
     /**注册命令*/
@@ -32,8 +34,18 @@ public class CommandManager {
         commandHashMap.put(command.name(), command);
     }
 
-    /**查找所有命令*/
-    public HashMap<String, Command> allCommand(){
+    /**解除注册命令*/
+    public void unregisterCommand(Command command) {
+        commandHashMap.remove(command.name());
+    }
+
+    /**移除所有命令*/
+    public void clearCommand(){
+        commandHashMap.clear();
+    }
+
+    /**所有命令*/
+    public ConcurrentHashMap<String, Command> allCommand(){
         return commandHashMap;
     }
 
@@ -43,7 +55,7 @@ public class CommandManager {
     }
 
     /**执行命令*/
-    public void execCommand(String name, Map params, CommandResultBack resultBack){
+    public void execCommand(String name, Map params, CommandResult resultBack){
         Command command = commandHashMap.get(name);
         if(command != null){
             command.exec(params,resultBack);

@@ -1,9 +1,12 @@
 package com.yhb.testwebview;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.widget.Toast;
-import com.yhb.aloneprocesswebview.command.Command;
-import com.yhb.aloneprocesswebview.command.CommandResultBack;
+import com.yhb.aloneprocesswebview.server.command.Command;
+import com.yhb.aloneprocesswebview.server.command.CommandResult;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,14 +25,22 @@ public class ToastCommand implements Command {
     }
 
     @Override
-    public void exec(Map params, CommandResultBack commandResultBack) {
-        Toast.makeText(context, String.valueOf(params.get("msg")),Toast.LENGTH_SHORT ).show();
+    public void exec(final Map params, final CommandResult commandResult) {
 
-        Map map = new HashMap();
-        map.put("msg","wocao niupi");
-        map.put("action",String.valueOf(params.get("action")));//需要与前端统一
+        Log.e("toastcommand", Thread.currentThread().getName() + " " + Thread.currentThread().getId());
 
-        commandResultBack.onResult(200,"callback",map);
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, String.valueOf(params.get("msg")),Toast.LENGTH_SHORT ).show();
+                Map map = new HashMap();
+                map.put("code",200);
+                map.put("uuid",String.valueOf(params.get("uuid")));//需要与前端统一
+                map.put("msg","操作成功");
+                commandResult.onResult("callback",map);
+            }
+        });
     }
 
 }

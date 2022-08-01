@@ -1,4 +1,4 @@
-package com.yhb.aloneprocesswebview.view;
+package com.yhb.aloneprocesswebview.client.view;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
@@ -12,22 +12,21 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.yhb.aloneprocesswebview.CommandDispatcher;
 
-/**承载webview的fragment，主要用于控制webview的生命周期*/
+/**承载webview的fragment*/
 public abstract class BaseWebviewFragment extends Fragment {
 
     /**onResume时执行的JS的方法名*/
-    public abstract String getOnResumeActionName();
+    public abstract String getOnResumeFunctionName();
 
     /**onPause时执行的JS的方法名*/
-    public abstract String getOnPauseActionName();
+    public abstract String getOnPauseFunctionName();
 
     /**onStop时执行的JS的方法名*/
-    public abstract String getOnStopActionName();
+    public abstract String getOnStopFunctionName();
 
     /**onDestroy时执行的JS的方法名*/
-    public abstract String getOnDestroyActionName();
+    public abstract String getOnDestroyFunctionName();
 
     /**获取布局文件*/
     @LayoutRes
@@ -65,8 +64,6 @@ public abstract class BaseWebviewFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        //初始化命令分发器，建立与主进程服务的连接
-        CommandDispatcher.getInstance().initAidlConnect(getContext());
         //初始化webview
         boolean isInit = initWebview(proWebview);
         if(!isInit)proWebview.getSettings().setJavaScriptEnabled(true);//打开JS
@@ -91,28 +88,28 @@ public abstract class BaseWebviewFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        proWebview.loadJsFunction(getOnResumeActionName());
+        proWebview.loadJsFunction(getOnResumeFunctionName());
         proWebview.onResume();
     }
 
     @Override
     public void onPause() {
-        super.onPause();
-        proWebview.loadJsFunction(getOnPauseActionName());
+        proWebview.loadJsFunction(getOnPauseFunctionName());
         proWebview.onPause();
+        super.onPause();
     }
 
     @Override
     public void onStop() {
+        proWebview.loadJsFunction(getOnStopFunctionName());
         super.onStop();
-        proWebview.loadJsFunction(getOnStopActionName());
     }
 
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
-        proWebview.loadJsFunction(getOnDestroyActionName());
+        proWebview.loadJsFunction(getOnDestroyFunctionName());
         proWebview.destroy();
+        super.onDestroyView();
     }
 
 }

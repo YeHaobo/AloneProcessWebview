@@ -1,8 +1,8 @@
 package com.yhb.testwebview;
 
 import android.annotation.SuppressLint;
-import com.yhb.aloneprocesswebview.view.ProWebview;
-import com.yhb.aloneprocesswebview.view.BaseWebviewFragment;
+import com.yhb.aloneprocesswebview.client.view.ProWebview;
+import com.yhb.aloneprocesswebview.client.view.BaseWebviewFragment;
 
 public class WebviewFragment extends BaseWebviewFragment {
     @Override
@@ -29,22 +29,22 @@ public class WebviewFragment extends BaseWebviewFragment {
     }
 
     @Override
-    public String getOnResumeActionName() {
+    public String getOnResumeFunctionName() {
         return "onWebResume";
     }
 
     @Override
-    public String getOnPauseActionName() {
+    public String getOnPauseFunctionName() {
         return "onWebPause";
     }
 
     @Override
-    public String getOnStopActionName() {
+    public String getOnStopFunctionName() {
         return "onWebStop";
     }
 
     @Override
-    public String getOnDestroyActionName() {
+    public String getOnDestroyFunctionName() {
         return "onWebDestroy";
     }
 

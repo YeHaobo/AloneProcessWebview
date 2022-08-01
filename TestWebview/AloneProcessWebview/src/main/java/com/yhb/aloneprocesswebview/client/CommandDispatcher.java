@@ -1,12 +1,12 @@
-package com.yhb.aloneprocesswebview;
+package com.yhb.aloneprocesswebview.client;
 
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
-import com.google.gson.Gson;
-import com.yhb.aloneprocesswebview.view.ProWebview;
-import java.util.Map;
+import com.yhb.aloneprocesswebview.IWebAidlCallback;
+import com.yhb.aloneprocesswebview.IWebAidlInterface;
+import com.yhb.aloneprocesswebview.client.view.ProWebview;
 
 /**命令分发器，运行在子进程*/
 public class CommandDispatcher {
@@ -23,8 +23,15 @@ public class CommandDispatcher {
         return instance;
     }
 
+    /**主线程handler*/
+    private Handler mainHandler;
     /**Aidl 接口*/
     private IWebAidlInterface iWebAidlInterface;
+
+    /**私有构造*/
+    private CommandDispatcher(){
+        mainHandler = new Handler(Looper.getMainLooper());
+    }
 
     /**初始化Aidl连接*/
     public void initAidlConnect(final Context context){
@@ -44,10 +51,10 @@ public class CommandDispatcher {
         if(iWebAidlInterface != null){
             try {
                 //调用Aidl接口方法
-                iWebAidlInterface.handleWebAction(cmd, params, new IWebAidlCallback.Stub() {//回调也需要使用Aidl接口
+                iWebAidlInterface.actionExec(cmd, params, new IWebAidlCallback.Stub() {//回调也需要使用Aidl接口
                     @Override
-                    public void onResult(int code, String action, String params) throws RemoteException {
-                        handleCallback(code, action, params, proWebview);//回调
+                    public void actionCallback(String functionName, String data) throws RemoteException {
+                        callback(functionName, data, proWebview);//回调
                     }
                 });
             } catch (RemoteException e) {
@@ -57,17 +64,15 @@ public class CommandDispatcher {
     }
 
     /**回调处理*/
-    private void handleCallback(final int code, final String action, final String params, final ProWebview proWebview){
+    private void callback(final String functionName, final String data, final ProWebview proWebview){
         //webview的使用必须切回主线程执行
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
+        mainHandler.post(new Runnable() {
             @Override
             public void run() {
-                Map map = new Gson().fromJson(params,Map.class);
-                map.put("code",code);
-                proWebview.handleCallback(action,new Gson().toJson(map));
+                proWebview.loadJsFunction(functionName,data);
             }
         });
     }
+
 
 }
