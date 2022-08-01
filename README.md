@@ -222,6 +222,8 @@ public class ToastCommand implements Command {
 	2、Command命令实现中回调的JS方法名是否正确  
 
 （3）网页加载失败时：  
-	1、请检查WebviewFragment中的initWebview()方法，分析初始化是否支持该网页配置/动作。
+	1、请检查WebviewFragment中的initWebview()方法，分析初始化是否支持该网页配置/动作。  
+
+（4）依赖的项目经过编译丢失注释，查看详细注释请下载demo查阅
 
 
