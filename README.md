@@ -5,10 +5,6 @@ Android独立进程Webview解决方案。
 独立进程Webview大幅减少OOM和进程崩溃的安全性问题。  
 内部核心使用的是AIDL接口分发，可并发的进行通讯和数据传输。   
 
-|方案流程图|
-|:----|
-|![](/IMG.png "方案流程图")|
-
 ***
 
 ### 依赖
@@ -164,7 +160,7 @@ public class ToastCommand implements Command {
 ```
 
 ### 命令管理
-注意：需要在客户端的主进程中操作，比如application中，切勿在子进程（WebviewActivity.class）中注册。
+注意：需要在客户端的主进程中操作，比如application中，切勿在子进程（WebviewActivity.class）中管理命令。
 ```java   
         ToastCommand toastCommand = new ToastCommand(this);
         CommandManager.getInstance().registerCommand(toastCommand);//注册命令
