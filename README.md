@@ -25,7 +25,7 @@ Android独立进程Webview解决方案。
   dependencies {
     implementation 'com.android.support:appcompat-v7:28.0.0'//v7 AndroidX项目不用添加
     implementation 'com.google.code.gson:gson:2.8.5'//GSON
-    implementation 'com.github.YeHaobo:AloneProcessWebview:2.2'
+    implementation 'com.github.YeHaobo:AloneProcessWebview:2.3'
   }
 ```
 
@@ -35,63 +35,39 @@ Android独立进程Webview解决方案。
 （1）WebviewFragment.java
 ```java
 public class WebviewFragment extends BaseWebviewFragment {
-    @Override
-    public int getLayoutRes() {
-        return R.layout.fragment_webview;//布局文件
-    }
-
-    @Override
-    public int getWebviewId() {
-        return R.id.webview;//webview的Id
-    }
 
     @Override
     public String getStartUrl() {
-        return "file:///android_asset/aidl.html";//打开的网页链接
+        return "file:///android_asset/aidl.html";
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
     @Override
-    public boolean initWebview(ProWebview webview) {//初始化webview
-//        webview.setWebViewClient(new WebViewClient());
-//        webview.setWebChromeClient(new WebChromeClient());
-        webview.getSettings().setJavaScriptEnabled(true);
-        return true;//默认返回false，默认情况只打开JS的支持
+    public boolean initWebview(ProWebview webview) {
+//        webview.getSettings().setJavaScriptEnabled(true);
+        return false;//默认返回false，只开启JS支持
     }
 
     @Override
     public String getOnResumeFunctionName() {
-        return "onWebResume";
+        return "onWebResume";//当fragment进入OnResume时会调用JS中onWebResume方法
     }
 
     @Override
     public String getOnPauseFunctionName() {
-        return "onWebPause";
+        return "onWebPause";//当fragment进入OnPause时会调用JS中onWebPause方法
     }
 
     @Override
     public String getOnStopFunctionName() {
-        return "onWebStop";
+        return "onWebStop";//当fragment进入OnStop时会调用JS中onWebStop方法
     }
 
     @Override
     public String getOnDestroyFunctionName() {
-        return "onWebDestroy";
+        return "onWebDestroy";//当fragment进入OnDestroy时会调用JS中onWebDestroy方法
     }
 
 }
-```
-（2）fragment_webview.xml
-```java
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <com.yhb.aloneprocesswebview.client.view.ProWebview
-        android:id="@+id/webview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-</LinearLayout>
 ```
 
 ### 创建展示Fragment的Activity
@@ -120,8 +96,13 @@ public class WebviewActivity extends AppCompatActivity {
     }
 
     private void reload(){
-    	//网页刷新
-        webviewFragment.getProWebview().reload();
+        webviewFragment.getProWebview().reload();//网页刷新
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        System.exit(0);//记得结束进程释放内存
     }
 
 }
