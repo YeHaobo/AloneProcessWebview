@@ -173,7 +173,11 @@ public class ToastCommand implements Command {
 ### 前端使用
 （1）调用命令执行
 ```java  
-        window.webview.post('toast',JSON.stringify(params));//参数一：自定义命令的name, 参数二：需要转换成Json字符串传输	
+        var params = {
+            "uuid":(new Date().getTime()).toString(),//唯一键
+            "msg":"执行吐司",//消息
+        };
+	window.webview.post('toast',JSON.stringify(params));//参数一：自定义命令的name, 参数二：需要转换成Json字符串传输	
 ```
 （2）命令执行回调
 ```java    
