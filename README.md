@@ -164,7 +164,7 @@ public class ToastCommand implements Command {
 ```
 
 ### 命令管理
-注意：需要在客户端的主进程注册，比如这里的WebviewActivity.class中。
+注意：需要在客户端的主进程中操作，比如application中，切勿在子进程（WebviewActivity.class）中注册。
 ```java   
         ToastCommand toastCommand = new ToastCommand(this);
         CommandManager.getInstance().registerCommand(toastCommand);//注册命令
