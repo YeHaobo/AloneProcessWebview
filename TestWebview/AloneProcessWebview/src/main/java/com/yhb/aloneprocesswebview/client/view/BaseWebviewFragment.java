@@ -2,8 +2,6 @@ package com.yhb.aloneprocesswebview.client.view;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.support.annotation.IdRes;
-import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,6 +10,8 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import com.yhb.aloneprocesswebview.R;
 
 /**承载webview的fragment*/
 public abstract class BaseWebviewFragment extends Fragment {
@@ -27,14 +27,6 @@ public abstract class BaseWebviewFragment extends Fragment {
 
     /**onDestroy时执行的JS的方法名*/
     public abstract String getOnDestroyFunctionName();
-
-    /**获取布局文件*/
-    @LayoutRes
-    public abstract int getLayoutRes();
-
-    /**获取webview的Id*/
-    @IdRes
-    public abstract int getWebviewId();
 
     /**初始化webview，return true 已初始化，return false 未初始化*/
     public abstract boolean initWebview(ProWebview proWebview);
@@ -54,8 +46,11 @@ public abstract class BaseWebviewFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(getLayoutRes(), container, false);
-        proWebview = view.findViewById(getWebviewId());
+        View view = inflater.inflate(R.layout.fragment_base_webview, container, false);
+        FrameLayout flParent = view.findViewById(R.id.fl_parent);
+        proWebview = new ProWebview(view.getContext().getApplicationContext());//使用ApplicationContext
+        proWebview.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        flParent.addView(proWebview);//动态添加webview
         return view;
     }
 
@@ -88,27 +83,36 @@ public abstract class BaseWebviewFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        proWebview.loadJsFunction(getOnResumeFunctionName());
-        proWebview.onResume();
+        if(proWebview != null){
+            proWebview.loadJsFunction(getOnResumeFunctionName());
+            proWebview.onResume();
+        }
     }
 
     @Override
     public void onPause() {
-        proWebview.loadJsFunction(getOnPauseFunctionName());
-        proWebview.onPause();
+        if(proWebview != null){
+            proWebview.loadJsFunction(getOnPauseFunctionName());
+            proWebview.onPause();
+        }
         super.onPause();
     }
 
     @Override
     public void onStop() {
-        proWebview.loadJsFunction(getOnStopFunctionName());
+        if(proWebview != null){
+            proWebview.loadJsFunction(getOnStopFunctionName());
+        }
         super.onStop();
     }
 
     @Override
     public void onDestroyView() {
-        proWebview.loadJsFunction(getOnDestroyFunctionName());
-        proWebview.destroy();
+        if(proWebview != null){
+            proWebview.loadJsFunction(getOnDestroyFunctionName());
+            proWebview.destroy();
+            proWebview = null;
+        }
         super.onDestroyView();
     }
 

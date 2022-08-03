@@ -34,4 +34,10 @@ public class WebviewActivity extends AppCompatActivity {
         webviewFragment.getProWebview().reload();//网页刷新
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        System.exit(0);//记得结束进程释放内存
+    }
+
 }
