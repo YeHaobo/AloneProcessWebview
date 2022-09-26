@@ -61,7 +61,9 @@ public class ProWebview extends WebView implements JavascriptCommand{
     @Override
     public void destroy() {
         stopLoading();
-        getHandler().removeCallbacksAndMessages(null);
+        if(getHandler() != null){
+            getHandler().removeCallbacksAndMessages(null);
+        }
         removeAllViews();
         ((ViewGroup) getParent()).removeView(this);
         setWebChromeClient(null);
