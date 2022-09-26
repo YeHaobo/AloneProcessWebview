@@ -21,7 +21,7 @@ Android独立进程Webview解决方案。
   dependencies {
     implementation 'com.android.support:appcompat-v7:28.0.0'//v7 AndroidX项目不用添加
     implementation 'com.google.code.gson:gson:2.8.5'//GSON
-    implementation 'com.github.YeHaobo:AloneProcessWebview:2.3'
+    implementation 'com.github.YeHaobo:AloneProcessWebview:2.4'
   }
 ```
 
@@ -205,6 +205,8 @@ public class ToastCommand implements Command {
 （3）网页加载失败时：  
 	1、请检查WebviewFragment中的initWebview()方法，分析初始化是否支持该网页配置/动作。  
 
-（4）依赖的项目经过编译丢失注释，查看详细注释请下载demo查阅
+（4）请确保WebActivity有且仅有一个实例同时存在，否则在多进程中可能出现不可预估的异常。
+
+（5）依赖的项目经过编译丢失注释，查看详细注释请下载demo查阅
 
 
