@@ -205,7 +205,7 @@ public class ToastCommand implements Command {
 （3）网页加载失败时：  
 	1、请检查WebviewFragment中的initWebview()方法，分析初始化是否支持该网页配置/动作。  
 
-（4）请确保WebActivity有且仅有一个实例同时存在，否则在多进程中可能出现不可预估的异常。
+（4）请确保WebviewActivity有且仅有一个实例同时存在，否则在多进程中可能出现不可预估的异常。
 
 （5）依赖的项目经过编译丢失注释，查看详细注释请下载demo查阅
 
