@@ -193,21 +193,21 @@ public class ToastCommand implements Command {
 
 ### 问题及其他
 
-（1）无法调用命令时：  
-	1、请确认命令是否在主进程中注册  
-	2、JS中的调用命令名称是否与Command命令的name一致  
-	3、JS传入的是否是json字符串  
+**（1）无法调用命令时：**  
+	<1>、请确认命令是否在主进程中注册  
+	<2>、JS中的调用命令名称是否与Command命令的name一致  
+	<3>、JS传入的是否是json字符串  
 
-（2）JS无法收到回调时：  
-	1、Command命令实现中的回调是否调用  
-	2、Command命令实现中回调的JS方法名是否正确  
+**（2）JS无法收到回调时：**  
+	<1>、Command命令实现中的回调是否调用  
+	<2>、Command命令实现中回调的JS方法名是否正确  
 
-（3）网页加载失败时：  
-	1、请检查AndroidManifest.xml文件中是否包含所需权限。
- 	2、请检查WebviewFragment中的initWebview()方法，分析初始化是否支持该网页配置/动作。  
+**（3）网页加载失败时：**  
+	<1>、请检查AndroidManifest.xml文件中是否包含所需权限。  
+ 	<2>、请检查WebviewFragment中的initWebview()方法，分析初始化是否支持该网页配置/动作。  
 
-（4）请确保WebviewActivity有且仅有一个实例同时存在，否则在多进程中可能出现不可预估的异常。
+**（4）请确保WebviewActivity有且仅有一个实例同时存在，否则在多进程中可能出现不可预估的异常。**
 
-（5）依赖的项目经过编译丢失注释，查看详细注释请下载demo查阅
+**（5）依赖的项目经过编译丢失注释，查看详细注释请下载demo查阅**
 
 
