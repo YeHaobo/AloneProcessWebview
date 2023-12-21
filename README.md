@@ -203,7 +203,8 @@ public class ToastCommand implements Command {
 	2、Command命令实现中回调的JS方法名是否正确  
 
 （3）网页加载失败时：  
-	1、请检查WebviewFragment中的initWebview()方法，分析初始化是否支持该网页配置/动作。  
+	1、请检查AndroidManifest.xml文件中是否包含所需权限。
+ 	2、请检查WebviewFragment中的initWebview()方法，分析初始化是否支持该网页配置/动作。  
 
 （4）请确保WebviewActivity有且仅有一个实例同时存在，否则在多进程中可能出现不可预估的异常。
 
