@@ -152,7 +152,7 @@ _注意：需要在主进程中操作，切勿在子进程中管理命令。_
             msg:"web send test msg",
         }
         var paramsJson = JSON.stringify(params);
-        var callbackFunction = "callback";
+        var callbackFunction = "callback";//回调方法名
         window.ApWebview.syncPost(uuid, action, paramsJson, callbackFunction);
     }
 ```
@@ -189,6 +189,7 @@ _注意：调用与回调的uuid匹配；调用时的callbackFunction为回调�
 	<1>动作实现的execute方法内是否使用ApWebviewActionResult.onActionResult()进行回调  
 	<2>JS调用syncPost/asyncPost时传入的回调方法名是否正确  
  	<3>回调的params参数是否为字符串类型
+  	<4>若iframe内无法收到回调，调用时的方法名需要包含子页面DOM路径（例： $("iframe")[0].contentWindow.callback）
 
 **（3）网页加载失败时：**  
 	<1>请检查AndroidManifest.xml文件中是否包含所需权限。  
