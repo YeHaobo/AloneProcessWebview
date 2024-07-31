@@ -1,10 +1,8 @@
 # AloneProcessWebview
 
-Android独立进程Webview解决方案。  
-适用于Android多模块化开发、web混合开发、多人协作等。  
-独立进程Webview大幅减少OOM和进程崩溃的安全性问题。  
-内部核心使用的是AIDL接口分发，可并发的进行通讯和数据传输。   
-
+Android独立进程Webview解决方案  
+基于com.github.YeHaobo:AidlHandler（进程通讯）项目构建  
+支持独立进程webveiw、以及多进程aidl通讯，适用于Android多模块化开发、web混合开发、多人协作...   
 ***
 
 ### 依赖
@@ -19,96 +17,85 @@ Android独立进程Webview解决方案。
 （2）在app的build.gradle文件中添加
 ```java
   dependencies {
-    implementation 'com.android.support:appcompat-v7:28.0.0'//v7 AndroidX项目不用添加
-    implementation 'com.google.code.gson:gson:2.8.5'//GSON
-    implementation 'com.github.YeHaobo:AloneProcessWebview:2.4'
-  }
+	implementation 'com.github.YeHaobo:AidlHandler:1.2'
+      	implementation 'com.github.YeHaobo:AloneProcessWebview:2.5'
+}
 ```
 
 ## 基本使用
 
-### 创建承载Webview的Fragment
-（1）WebviewFragment.java
+### 创建webviewFragment，继承并实现BaseApWebviewFragment
+（1）ApWebviewFragment.java
 ```java
-public class WebviewFragment extends BaseWebviewFragment {
-
+public class ApWebviewFragment extends BaseApWebviewFragment {
     @Override
     public String getStartUrl() {
         return "file:///android_asset/aidl.html";
     }
-
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
-    public boolean initWebview(ProWebview webview) {
-//        webview.getSettings().setJavaScriptEnabled(true);
-        return false;//默认返回false，只开启JS支持
+    public void initWebview(ApWebview webview) {
+        webview.getSettings().setJavaScriptEnabled(true);
     }
-
     @Override
     public String getOnResumeFunctionName() {
         return "onWebResume";//当fragment进入OnResume时会调用JS中onWebResume方法
     }
-
     @Override
     public String getOnPauseFunctionName() {
         return "onWebPause";//当fragment进入OnPause时会调用JS中onWebPause方法
     }
-
     @Override
     public String getOnStopFunctionName() {
         return "onWebStop";//当fragment进入OnStop时会调用JS中onWebStop方法
     }
-
     @Override
     public String getOnDestroyFunctionName() {
         return "onWebDestroy";//当fragment进入OnDestroy时会调用JS中onWebDestroy方法
     }
-
 }
 ```
 
-### 创建展示Fragment的Activity
+### 创建WebviewActivity展示webview
 （1）WebviewActivity.java
 ```java
 public class WebviewActivity extends AppCompatActivity {
-
-    private WebviewFragment webviewFragment;
-
+    /**webFragment*/
+    private ApWebviewFragment webviewFragment;
+    /**创建*/
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_webview);
-
-        webviewFragment = new WebviewFragment();
+        webviewFragment = new ApWebviewFragment();
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         transaction.replace(R.id.fl, webviewFragment).commit();
-
     }
-
+    /**网页返回拦截虚拟返回键*/
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        //网页返回拦截虚拟返回键
         return webviewFragment.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
     }
-
+    /**网页刷新*/
     private void reload(){
-        webviewFragment.getProWebview().reload();//网页刷新
+        webviewFragment.apWebview().reload();
     }
-
+    /**释放*/
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        System.exit(0);//记得结束进程释放内存
+        System.exit(0);
     }
-
 }
 ```
 （2）activity_webview.xml
 ```java
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
     <FrameLayout
         android:id="@+id/fl"
         android:layout_width="match_parent"
@@ -116,98 +103,94 @@ public class WebviewActivity extends AppCompatActivity {
 </LinearLayout>
 ```
 
-### 注册Activity
-注意：这里另开了子进程和硬件加速，进程名需自定义。
+### 注册WebviewActivity
+_注意：这里另开了子进程和硬件加速_
 ```java
         <activity android:name=".WebviewActivity" android:hardwareAccelerated="true" android:process=":remoteweb"/>
 ```
 
-### 自定义命令
+### 自定义动作
 ```java
-public class ToastCommand implements Command {
-
-    private Context context;
-
-    public ToastCommand(Context context) {
-        this.context = context;
-    }
-
+/**app信息获取*/
+public class AppInfoAction implements ApWebviewAction {
     @Override
     public String name() {
-        return "toast";     //JS调用：window.webview.post('toast',JSON.stringify(params));
+        return "appInfo";//JS调用示例：window.ApWebview.asyncPost(uuid, 'appInfo', 'json params', callbackFunctionName);
     }
-
     @Override
-    public void exec(final Map params, final CommandResult commandResult) {
-	//当前在binder线程，若更新UI需要切换线程
-        Log.e("toastcommand", Thread.currentThread().getName() + " " + Thread.currentThread().getId());
-
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(context, String.valueOf(params.get("msg")),Toast.LENGTH_SHORT ).show();
-                Map map = new HashMap();
-                map.put("code",200);
-                map.put("uuid",String.valueOf(params.get("uuid")));
-                map.put("msg","操作成功");
-                commandResult.onResult("callback",map);//回调：callback为前端JS中的回调方法名
-            }
-        });
+    public void execute(String params, ApWebviewActionResult result) {
+        Log.e("AppInfoAction", params);
+        Log.e("AppInfoAction", Thread.currentThread().getName() + " " + Thread.currentThread().getId());
+        Map<String, Object> infoMap = new HashMap<>();
+        infoMap.put("version_name", BuildConfig.VERSION_NAME);
+        infoMap.put("version_code", BuildConfig.VERSION_CODE);
+        infoMap.put("package", BuildConfig.APPLICATION_ID);
+        result.onActionResult(200, new Gson().toJson(infoMap));
     }
-
 }
 ```
 
-### 命令管理
-注意：需要在客户端的主进程中操作，比如application中，切勿在子进程（WebviewActivity.class）中管理命令。
+### 动作管理
+_注意：需要在主进程中操作，切勿在子进程中管理命令。_
 ```java   
-        ToastCommand toastCommand = new ToastCommand(this);
-        CommandManager.getInstance().registerCommand(toastCommand);//注册命令
-        CommandManager.getInstance().unregisterCommand(toastCommand);//解注册命令
-        CommandManager.getInstance().findCommand("toast");//查找命令
-        CommandManager.getInstance().clearCommand();//清除所有命令
-        ConcurrentHashMap<String, Command> map = CommandManager.getInstance().allCommand();//获取所有命令
+        AppInfoAction action = new AppInfoAction();
+        ApWebviewActionManager.getInstance().register(action);//注册命令
+        ApWebviewActionManager.getInstance().unregister(action.name());//解注册命令
+        ApWebviewActionManager.getInstance().find("toast");//查找命令
+        ApWebviewActionManager.getInstance().clear();//清除所有命令
+        ConcurrentHashMap<String, ApWebviewAction> map = ApWebviewActionManager.getInstance().all();//获取所有命令
 ```
 
 ### 前端使用
-（1）调用命令执行
-```java  
+（1）syncPost同步调用
+```java
+    function syncPost(){
+        var uuid = (new Date().getTime()).toString();//测试时直接使用时间戳，生产时应使用UUID防止重复id
+        var action = "appInfo";
         var params = {
-            "uuid":(new Date().getTime()).toString(),//唯一键
-            "msg":"执行吐司",//消息
-        };
-	window.webview.post('toast',JSON.stringify(params));//参数一：自定义命令的name, 参数二：需要转换成Json字符串传输	
+            type: "syncPost",
+            msg:"web send test msg",
+        }
+        var paramsJson = JSON.stringify(params);
+        var callbackFunction = "callback";
+        window.ApWebview.syncPost(uuid, action, paramsJson, callbackFunction);
+    }
 ```
-（2）命令执行回调
+（2）syncPost异步调用
+```java
+    function asyncPost(){
+        var uuid = (new Date().getTime()).toString();
+        var action = "appInfo";
+        var params = {
+            type: "asyncPost",
+            msg:"web send test msg",
+        }
+        var paramsJson = JSON.stringify(params);
+        var callbackFunction = "callback";
+        window.ApWebview.asyncPost(uuid, action, paramsJson, callbackFunction);
+    }
+```
+（3）回调
 ```java    
-    function callback(data){
-        var obj = JSON.parse(data);//回调的是Json字符串，需要转换成对象
-	var code = obj.code;
-	var msg = obj.msg;
-	var uuid = obj.uuid;
-	...
-    }		
+    function callback(uuid, code, params){
+        var txt = document.getElementById('callbackMsg');
+        txt.innerHTML = txt.innerHTML + "<br/>uuid:" + uuid + "<br/>code:" + code + "<br/>params:" + params + "<br/>";
+    }	
 ```
-注意：若JS需要鉴别回调动作，实现单次调用对应单个回调，请参考assets中的aidl.html文件
+_注意：调用与回调的uuid匹配；调用时的callbackFunction为回调方法名，回调方法名可改但参数不可变更。_
 
 ### 问题及其他
 
-**（1）无法调用命令时：**  
-	<1>、请确认命令是否在主进程中注册  
-	<2>、JS中的调用命令名称是否与Command命令的name一致  
-	<3>、JS传入的是否是json字符串  
+**（1）无法调用时：**  
+	<1>请确认动作是否在主进程中注册  
+	<2>JS中调用的动作名称是否与ApWebviewAction的name一致   
 
-**（2）JS无法收到回调时：**  
-	<1>、Command命令实现中的回调是否调用  
-	<2>、Command命令实现中回调的JS方法名是否正确  
+**（2）无法收到回调时：**  
+	<1>动作实现的execute方法内是否使用ApWebviewActionResult.onActionResult()进行回调  
+	<2>JS调用syncPost/asyncPost时传入的回调方法名是否正确  
+ 	<3>回调的params参数是否为字符串类型
 
 **（3）网页加载失败时：**  
-	<1>、请检查AndroidManifest.xml文件中是否包含所需权限。  
- 	<2>、请检查WebviewFragment中的initWebview()方法，分析初始化是否支持该网页配置/动作。  
-
-**（4）请确保WebviewActivity有且仅有一个实例同时存在，否则在多进程中可能出现不可预估的异常。**
-
-**（5）依赖的项目经过编译丢失注释，查看详细注释请下载demo查阅**
-
+	<1>请检查AndroidManifest.xml文件中是否包含所需权限。  
+ 	<2>请检查WebviewFragment中的initWebview()方法，分析初始化正确。  
 
