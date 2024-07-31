@@ -2,7 +2,9 @@
     package="com.yhb.aloneprocesswebview">
 
     <application>
-        <service android:name=".server.service.MainProcessWebService"/>
+
+        <service android:name=".server.service.ApWebviewService" android:enabled="true" android:exported="true"/>
+
     </application>
 
 </manifest>

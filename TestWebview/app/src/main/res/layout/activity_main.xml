@@ -4,11 +4,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center">
-
     <TextView
-        android:id="@+id/tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"/>
-
+        android:layout_marginBottom="20dp"
+        android:text="this is main process, click to subprocess webview"/>
+    <Button
+        android:id="@+id/btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="to subProcess"/>
 </LinearLayout>

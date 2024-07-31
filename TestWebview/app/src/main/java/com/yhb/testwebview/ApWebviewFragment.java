@@ -1,19 +1,20 @@
 package com.yhb.testwebview;
 
-import com.yhb.aloneprocesswebview.client.view.ProWebview;
-import com.yhb.aloneprocesswebview.client.view.BaseWebviewFragment;
+import android.annotation.SuppressLint;
+import com.yhb.aloneprocesswebview.client.view.ApWebview;
+import com.yhb.aloneprocesswebview.client.view.BaseApWebviewFragment;
 
-public class WebviewFragment extends BaseWebviewFragment {
+public class ApWebviewFragment extends BaseApWebviewFragment {
 
     @Override
     public String getStartUrl() {
         return "file:///android_asset/aidl.html";
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
-    public boolean initWebview(ProWebview webview) {
-//        webview.getSettings().setJavaScriptEnabled(true);
-        return false;//默认返回false，只开启JS支持
+    public void initWebview(ApWebview webview) {
+        webview.getSettings().setJavaScriptEnabled(true);
     }
 
     @Override

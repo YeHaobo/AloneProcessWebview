@@ -6,8 +6,6 @@ android {
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 6
-        versionName "2.4"
     }
 
     buildTypes {
@@ -16,9 +14,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
 }
 
 dependencies {
     compileOnly 'com.android.support:appcompat-v7:28.0.0'
-    compileOnly 'com.google.code.gson:gson:2.8.5'
+    compileOnly 'com.github.YeHaobo:AidlHandler:1.2'
 }

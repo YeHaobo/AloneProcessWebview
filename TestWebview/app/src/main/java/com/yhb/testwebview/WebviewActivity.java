@@ -10,34 +10,36 @@ import android.view.KeyEvent;
 /**客户端*/
 public class WebviewActivity extends AppCompatActivity {
 
-    private WebviewFragment webviewFragment;
+    /**webFragment*/
+    private ApWebviewFragment webviewFragment;
 
+    /**创建*/
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_webview);
-
-        webviewFragment = new WebviewFragment();
+        webviewFragment = new ApWebviewFragment();
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         transaction.replace(R.id.fl, webviewFragment).commit();
-
     }
 
+    /**网页返回拦截虚拟返回键*/
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        //网页返回拦截虚拟返回键
         return webviewFragment.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
     }
 
+    /**网页刷新*/
     private void reload(){
-        webviewFragment.getProWebview().reload();//网页刷新
+        webviewFragment.apWebview().reload();
     }
 
+    /**释放*/
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        System.exit(0);//记得结束进程释放内存
+        System.exit(0);
     }
 
 }

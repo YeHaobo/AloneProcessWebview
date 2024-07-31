@@ -3,95 +3,78 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="format-detection" content="telephone = no">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-
     <style type="text/css">
         .item {
-            padding: 20px;
-            max-width: 600px;
-            margin: 0 auto;
+            padding: 10px;
             text-align: center;
             background-color: #999999;
-            margin-top: 20px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body style="height: 100%;">
 <script>
 
-    //可以交互回调
+    //android 生命周期回调
     function onWebResume(){
-        var txt = document.getElementById('life');
+        var txt = document.getElementById('lifeMsg');
         txt.innerHTML = txt.innerHTML + ' -> onWebResume';
     }
-
-    //不可交互回调
     function onWebPause(){
-        var txt = document.getElementById('life');
+        var txt = document.getElementById('lifeMsg');
         txt.innerHTML = txt.innerHTML + ' -> onWebPause';
     }
-
-    //不可见回调
     function onWebStop(){
-        var txt = document.getElementById('life');
+        var txt = document.getElementById('lifeMsg');
         txt.innerHTML = txt.innerHTML + ' -> onWebStop';
     }
-
-    //视图销毁回调
     function onWebDestroy(){
-        var txt = document.getElementById('life');
+        var txt = document.getElementById('lifeMsg');
         txt.innerHTML = txt.innerHTML + ' -> onWebDestroy';
     }
 
 
-
-    //用于存储命令回调
-    var callbacks = {};
-
-    //获取唯一键，用于确定回调方法
-    function uuid(){
-        return (new Date().getTime()).toString();//返回的值确保唯一
-    }
-
-    //添加回调
-    function addCallback(uuid,func){
-        delete callbacks[uuid];//移除对应的回调对象
-        callbacks[uuid] = {callback:func};//新增回调对象
-    }
-
-    //接收回调
-    function callback(data){
-        var obj = JSON.parse(data);//回调的是字符串需要转换成对象
-        callbacks[obj.uuid].callback(data);//执行对应的回调
-        delete callbacks[obj.uuid];//删除对应的回调
-    }
-
-    //调用命令
-    function callToast() {
-        var txt = document.getElementById('cmd');
-
+    //syncPost 调用
+    function syncPost(){
+        var uuid = (new Date().getTime()).toString();//测试时直接使用时间戳，生产时应使用UUID防止重复id
+        var action = "appInfo";
         var params = {
-            "uuid":uuid(),//唯一键
-            "msg":"执行吐司",//消息
-        };
-
-        //添加回调
-        addCallback(params.uuid, function(data){
-            //var obj = JSON.parse(data);//回调的是字符串需要转换成对象
-            txt.innerHTML = txt.innerHTML + "<br/>回调：" + data + "<br/>";
-        })
-
-        //发送命令
-        var str = JSON.stringify(params);//参数需要转换成json字符串发送
-        window.webview.post('toast', str);//发送命令
-        txt.innerHTML = txt.innerHTML + "<br/>发送：" + str;
+            type: "syncPost",
+            msg:"web send test msg",
+        }
+        var paramsJson = JSON.stringify(params);
+        var callbackFunction = "callback";
+        window.ApWebview.syncPost(uuid, action, paramsJson, callbackFunction);
+        var txt = document.getElementById('sendMsg');
+        txt.innerHTML = txt.innerHTML + "<br/>uuid:" + uuid + "<br/>action:" + action + "<br/>type:syncPost" + "<br/>params:" + paramsJson + "<br/>";
+    }
+    //asyncPost调用
+    function asyncPost(){
+        var uuid = (new Date().getTime()).toString();
+        var action = "appInfo";
+        var params = {
+            type: "asyncPost",
+            msg:"web send test msg",
+        }
+        var paramsJson = JSON.stringify(params);
+        var callbackFunction = "callback";
+        window.ApWebview.asyncPost(uuid, action, paramsJson, callbackFunction);
+        var txt = document.getElementById('sendMsg');
+        txt.innerHTML = txt.innerHTML + "<br/>uuid:" + uuid + "<br/>action:" + action + "<br/>type:asyncPost" + "<br/>params:" + paramsJson + "<br/>";
+    }
+    //回调
+    function callback(uuid, code, params){
+        var txt = document.getElementById('callbackMsg');
+        txt.innerHTML = txt.innerHTML + "<br/>uuid:" + uuid + "<br/>code:" + code + "<br/>params:" + params + "<br/>";
     }
 
 </script>
-<div class="item" style="font-size: 20px; color: #ffffff" onclick="callToast()">调用命令</div>
-<p id="cmd" style="font-size: 12px; color: #000000">信息</p>
-<p id="life" style="font-size: 12px; color: #000000">生命周期</p>
+<div class="item" style="display:inline-block; font-size: 14px; width: 60px; height: 20px; color: #ffffff" onclick="syncPost()">syncPost</div>
+<div class="item" style="display:inline-block; font-size: 14px; width: 60px; height: 20px; color: #ffffff" onclick="asyncPost()">asyncPost</div>
+<p id="sendMsg" style="font-size: 12px; color: #2196F3">sendMsg: <br/></p>
+<p id="callbackMsg" style="font-size: 12px; color: #4CAF50">callbackMsg: <br/></p>
+<p id="lifeMsg" style="font-size: 12px; color: #FF9800">lifeMsg: <br/></p>
 </body>
 </html>
